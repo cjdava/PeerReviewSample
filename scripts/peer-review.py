@@ -1,9 +1,9 @@
 import sys
 import os
-import requests
 
 def read_checklist(checklist_path):
     if checklist_path.startswith("http"):
+        import requests
         response = requests.get(checklist_path)
         checklist = response.text
     else:
@@ -27,10 +27,24 @@ def analyze_file(filepath):
     with open(filepath, 'r') as f:
         content = f.read()
         if "List<" in content and "=" not in content:
-            issues.append("Possible uninitialized list in " + filepath)
+            issues.append("Possible uninitialized list")
         if "null" in content and "if" not in content:
-            issues.append("Possible missing null check in " + filepath)
+            issues.append("Possible missing null check")
     return issues
+
+def print_issues(all_issues):
+    if not all_issues:
+        print("✅ No issues found.")
+        return
+    print("## 🚩 Peer Review Issues Found\n")
+    issues_by_file = {}
+    for file, msg in all_issues:
+        issues_by_file.setdefault(file, []).append(msg)
+    for file, msgs in issues_by_file.items():
+        print(f"### {file}")
+        for msg in msgs:
+            print(f"- {msg}")
+        print()
 
 def main():
     checklist_path = sys.argv[1]
@@ -44,14 +58,11 @@ def main():
     all_issues = []
     for f in cs_files:
         issues = analyze_file(f)
-        all_issues.extend(issues)
+        for issue in issues:
+            all_issues.append((f, issue))
+    print_issues(all_issues)
     if all_issues:
-        print("Issues found:")
-        for issue in all_issues:
-            print(issue)
         sys.exit(1)
-    else:
-        print("No issues found.")
 
 if __name__ == "__main__":
     main()
