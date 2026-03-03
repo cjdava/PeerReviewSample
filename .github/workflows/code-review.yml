@@ -1,0 +1,29 @@
+name: Code Review
+
+on:
+  pull_request:
+    paths:
+      - '**/*.cs'
+      - '**/*.sln'
+      - '**/*.csproj'
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Copilot CLI
+        run: npm install -g @githubnext/copilot-cli
+
+      - name: Run Code Review Agent
+        run: |
+          copilot --agent code-review --prompt "Review all C# source files, solution (.sln), and project (.csproj) files for compliance." | tee copilot-output.txt
+
+      - name: Fail if review status is FAIL
+        run: |
+          if grep -q "REVIEW STATUS: FAIL" copilot-output.txt; then
+            echo "Code review failed. Please fix the issues before merging."
+            exit 1
+          fi
