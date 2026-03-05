@@ -52,17 +52,19 @@ Use this checklist as the rule set for compliance.
 
 ## Review Procedure
 
-1. Fetch the checklist.
-2. Identify modified files in the pull request.
-3. Filter to `.cs`, `.sln`, `.csproj`.
-4. Read `.sln` and `.csproj` files to understand the solution structure.
-5. Evaluate modified C# code against the checklist.
+1. Retrieve the checklist from the external repository.
+2. Identify files modified in the pull request.
+3. Filter the modified files to include only `.cs`, `.sln`, and `.csproj`.
+4. Read the `.sln` file to understand the overall solution structure.
+5. Read `.csproj` files to determine project dependencies.
+6. Evaluate the modified C# source files against the checklist rules.
+7. Identify any violations of the checklist.
 
 ---
 
 ## Output Format
 
-The agent must produce the following report format:
+The agent must produce a structured review report using the following format:
 
 CODE REVIEW SUMMARY
 
@@ -71,7 +73,7 @@ Checklist Findings:
 
 REVIEW STATUS: FAIL
 
-If no violations exist:
+If no violations are detected:
 
 CODE REVIEW SUMMARY
 
@@ -79,6 +81,28 @@ Checklist Findings:
 - No violations detected
 
 REVIEW STATUS: PASS
+
+---
+
+## Workflow Enforcement
+
+The workflow must enforce the compliance result returned by the agent.
+
+If the output contains:
+
+REVIEW STATUS: FAIL
+
+the workflow must terminate with a non-zero exit code so that the GitHub
+Actions job fails.
+
+If the output contains:
+
+REVIEW STATUS: PASS
+
+the workflow may complete successfully.
+
+A failed workflow should prevent the pull request from merging when
+branch protection rules require this workflow to pass.
 
 ---
 
@@ -91,6 +115,7 @@ The agent must:
 - not open pull requests
 - not suggest code changes
 - not propose fixes
+- not trigger other workflows
 
 The agent must only report compliance findings.
 

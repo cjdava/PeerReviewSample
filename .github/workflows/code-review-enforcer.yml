@@ -1,0 +1,45 @@
+name: Enforce AI Code Review
+
+on:
+  workflow_run:
+    workflows: [".NET Code Review Agent"]
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Authenticate GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh auth status
+
+      - name: Download AI agent logs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Downloading logs from workflow run ${{ github.event.workflow_run.id }}"
+          gh run download ${{ github.event.workflow_run.id }} -n agent_outputs || true
+
+      - name: Fail if review failed
+        run: |
+          echo "Scanning logs for AI review result..."
+
+          if grep -R "REVIEW STATUS: FAIL" .; then
+            echo "❌ Code review failed"
+            exit 1
+          else
+            echo "✅ Code review passed"
+          fi
