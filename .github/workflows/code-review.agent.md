@@ -109,6 +109,7 @@ The agent must:
 - not suggest code changes
 - not propose fixes
 - not trigger other workflows
+- may post comments on pull request to report compliance findings
 
 The agent must only report compliance findings.
 
