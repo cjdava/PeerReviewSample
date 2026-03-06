@@ -93,26 +93,12 @@ CODE REVIEW SUMMARY
 
 Checklist Findings:
 
--- Rule: 2.1 No Silent Catch Blocks
-  Category: Exception Handling
-  Severity: HIGH
-  File: Services/OrderProcessor.cs
-  Line: 54
-  Description: An empty catch block is present which silently ignores exceptions. Exceptions must be logged or handled.
-
-- Rule: 4.2 Use Structured Logging
-  Category: Logging Best Practices
-  Severity: MEDIUM
-  File: Controllers/UserController.cs
-  Line: 33
-  Description: Logging uses string concatenation instead of structured logging.
-
-- Rule: 1.2 Class Naming Clarity
-  Category: Naming Conventions
-  Severity: LOW
-  File: Services/Helper.cs
-  Line: 5
-  Description: Class name "Helper" is too generic and does not clearly describe responsibility.
+- Rule: <rule> 
+  Category: <category> 
+  Severity: <severity> 
+  File: <file> 
+  Line: <line> 
+  Description: <description>
 
 AI_CODE_REVIEW_STATUS: FAIL
 
