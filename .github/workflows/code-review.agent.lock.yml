@@ -24,8 +24,9 @@
 # AI agent that performs automated code reviews for .NET repositories.
 # The agent validates C# code against the engineering checklist stored
 # in an external repository and outputs a compliance report.
+# The agent analyzes both the files changed in commits and the entire repository.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f643720aac2caa03d52ffb35a09ebc974e4299d03f6886796c0d54a571c31017","compiler_version":"v0.53.3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a23a5d5cbb0f2e6b6369c8f1af09e8cecc21df41981cfda5516f2146ea9efce6","compiler_version":"v0.53.3"}
 
 name: ".NET Code Review Agent"
 "on":
