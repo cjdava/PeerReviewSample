@@ -19,10 +19,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install GitHub CLI
+      - name: Install GitHub CLI and jq
         run: |
           sudo apt update
-          sudo apt install gh -y
+          sudo apt install gh jq -y
 
       - name: Authenticate GitHub CLI
         env:
@@ -34,31 +34,26 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Downloading artifacts from run ${{ github.event.workflow_run.id }}"
-          gh run download ${{ github.event.workflow_run.id }}
+          gh run download ${{ github.event.workflow_run.id }} || true
 
-      - name: Locate AI report
-        id: find_report
+      - name: Extract AI review report for this workflow run
+        id: extract
         run: |
-          REPORT_FILE=$(grep -rl "AI CODE REVIEW REPORT START" . | head -n 1)
+          RUN_ID=${{ github.event.workflow_run.id }}
 
-          if [ -z "$REPORT_FILE" ]; then
-            echo "report_found=false" >> $GITHUB_OUTPUT
-            exit 0
+          echo "Looking for report with RUN_ID: $RUN_ID"
+
+          FILE=$(grep -rl "AI CODE REVIEW FINAL REPORT RUN_ID:$RUN_ID" . | head -n 1)
+
+          if [ -z "$FILE" ]; then
+            echo "No matching AI report found."
+            exit 1
           fi
 
-          echo "report_found=true" >> $GITHUB_OUTPUT
-          echo "report_file=$REPORT_FILE" >> $GITHUB_OUTPUT
+          awk "/FINAL REPORT RUN_ID:$RUN_ID/,/END RUN_ID:$RUN_ID/" "$FILE" > review.txt
 
-      - name: Extract AI review report
-        id: extract
-        if: steps.find_report.outputs.report_found == 'true'
-        run: |
-          awk '/AI CODE REVIEW REPORT START/,/AI CODE REVIEW REPORT END/' \
-          "${{ steps.find_report.outputs.report_file }}" > review.txt
-
-          echo "report<<EOF" >> $GITHUB_OUTPUT
-          cat review.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Extracted report:"
+          cat review.txt
 
       - name: Get PR number
         id: pr
@@ -71,15 +66,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "## 🤖 AI Code Review" > comment.md
+          echo "## 🤖 AI Code Review Result" > comment.md
           echo "" >> comment.md
+          echo '```' >> comment.md
           cat review.txt >> comment.md
+          echo '```' >> comment.md
 
           gh pr comment ${{ steps.pr.outputs.pr }} --body-file comment.md
 
       - name: Fail if AI review failed
         run: |
-          if grep -R "AI_CODE_REVIEW_STATUS: FAIL" .; then
+          if grep -q "AI_CODE_REVIEW_STATUS: FAIL" review.txt; then
             echo "❌ AI code review failed"
             exit 1
           else
