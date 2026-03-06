@@ -22,26 +22,26 @@ description: |
 
 ## Objective
 
-Review pull requests that contain C# code and determine whether the code
+Review pull requests containing C# code and determine whether the code
 complies with the engineering checklist.
 
 The agent is strictly **read-only** and must never modify the repository.
 
 ---
 
-## Files to Analyze
+# Files to Analyze
 
-Analyze only the following file types:
+Analyze only:
 
-- `*.cs`
-- `*.sln`
-- `*.csproj`
+* `*.cs`
+* `*.sln`
+* `*.csproj`
 
 Ignore all other files.
 
 ---
 
-## External Checklist
+# External Checklist
 
 Retrieve the engineering checklist from:
 
@@ -51,109 +51,107 @@ Use this checklist as the rule set for compliance.
 
 ---
 
-## Review Procedure
+# Review Procedure
 
-1. Retrieve the checklist from the external repository.
-2. Identify files modified in the pull request or commit.
-3. Filter the modified files to include only `.cs`, `.sln`, and `.csproj`.
-4. Read the `.sln` file to understand the overall solution structure.
-5. Read `.csproj` files to determine project dependencies.
-6. Evaluate:
-   - the modified C# source files, and
-   - any relevant files in the repository required for context.
-7. Compare the code against the checklist rules.
-8. Identify any violations of the checklist.
+1. Retrieve the checklist.
+2. Identify modified files in the pull request.
+3. Filter files to `.cs`, `.sln`, `.csproj`.
+4. Read `.sln` and `.csproj` files to understand project structure.
+5. Evaluate modified code and relevant repository context.
+6. Compare against checklist rules.
+7. Identify violations.
 
 ---
 
-## Output Format
+# Final Output Specification
 
-## Output Format
+The agent may internally reason, but the **final output must appear exactly once**.
 
-The agent must produce a structured review report using the following format.
+The report must be wrapped with markers containing the workflow run ID.
 
-### Finding Structure
-
-Each violation must follow this structure:
+Start marker:
 
 ```
+=== AI CODE REVIEW FINAL REPORT RUN_ID:<workflow-run-id> ===
+```
+
+End marker:
+
+```
+=== AI CODE REVIEW END RUN_ID:<workflow-run-id> ===
+```
+
+The `<workflow-run-id>` must match the current GitHub workflow run ID.
+
+---
+
+# Final Report Format
+
+```
+=== AI CODE REVIEW FINAL REPORT RUN_ID:<workflow-run-id> ===
+
+PR_NUMBER: <pull-request-number>
+
+CODE REVIEW SUMMARY
+
+Checklist Findings:
+
 - Rule: <Checklist Rule>
+  Category: <Checklist Section>
   Severity: <LOW | MEDIUM | HIGH | CRITICAL>
   File: <relative file path>
   Line: <line number>
-  Description: <detailed explanation>
+  Description: <clear explanation>
+
+AI_CODE_REVIEW_STATUS: PASS | FAIL
+
+=== AI CODE REVIEW END RUN_ID:<workflow-run-id> ===
 ```
 
-### When Violations Exist
+If no violations exist:
 
 ```
---- AI CODE REVIEW REPORT START ---
-
-CODE REVIEW SUMMARY
-
-Checklist Findings:
-
-- Rule: <rule> 
-  Category: <category> 
-  Severity: <severity> 
-  File: <file> 
-  Line: <line> 
-  Description: <description>
-
-AI_CODE_REVIEW_STATUS: FAIL
-
---- AI CODE REVIEW REPORT END ---
-```
-
-### When No Violations Exist
-
-```
---- AI CODE REVIEW REPORT START ---
-
-CODE REVIEW SUMMARY
-
 Checklist Findings:
 - No violations detected
-
-AI_CODE_REVIEW_STATUS: PASS
-
---- AI CODE REVIEW REPORT END ---
 ```
-
-## Workflow Enforcement
-
-The agent must output the compliance result using:
-
-```
-AI_CODE_REVIEW_STATUS: PASS
-```
-
-or
-
-```
-AI_CODE_REVIEW_STATUS: FAIL
-```
-
-A subsequent workflow step must parse the agent output.
-
-- If the output contains `AI_CODE_REVIEW_STATUS: FAIL`, the step must exit with a non-zero code so the workflow fails.
-- If the output contains `AI_CODE_REVIEW_STATUS: PASS`, the workflow may complete successfully.
-
-This allows **branch protection rules** to prevent pull request merges when violations are detected.
 
 ---
 
-## Restrictions
+# Output Rules
 
 The agent must:
 
-- not modify repository files
-- not create commits
-- not open pull requests
-- not suggest code changes
-- not propose fixes
-- not trigger other workflows
+* produce **exactly one final report**
+* include the **workflow run ID in both markers**
+* include `AI_CODE_REVIEW_STATUS`
+* not output additional report blocks
 
-The agent must **only report compliance findings**.
+---
 
-After outputting `AI_CODE_REVIEW_STATUS`, the agent must terminate execution.
+# Workflow Enforcement
+
+A separate enforcement workflow will:
+
+1. Extract the report block matching the workflow run ID
+2. Post the report on the pull request
+3. Fail the workflow if
+
+```
+AI_CODE_REVIEW_STATUS: FAIL
+```
+
+---
+
+# Restrictions
+
+The agent must:
+
+* not modify repository files
+* not create commits
+* not open pull requests
+* not propose fixes
+* not trigger other workflows
+
+The agent must only report compliance findings.
+
+After outputting the final report block, the agent must terminate execution.
