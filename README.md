@@ -266,7 +266,7 @@ This allows the enforcement workflow to:
 ## File Location
 
 ```
-.github/workflows/enforce-ai-code-review.yml
+.github/workflows/code-review-enforcer.yml
 ```
 
 ---
