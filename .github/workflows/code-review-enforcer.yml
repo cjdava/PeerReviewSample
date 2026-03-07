@@ -13,6 +13,12 @@ permissions:
 
 jobs:
   enforce:
+    # Only enforce when the triggering workflow ran for a PR
+    # and completed successfully
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+
     runs-on: ubuntu-latest
 
     steps:
@@ -33,20 +39,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Downloading artifacts from run ${{ github.event.workflow_run.id }}"
-          gh run download ${{ github.event.workflow_run.id }} || true
+          RUN_ID=${{ github.event.workflow_run.id }}
+          echo "Downloading artifacts from run $RUN_ID"
 
-      - name: Extract AI review report for this workflow run
+          mkdir artifacts
+          cd artifacts
+
+          gh run download $RUN_ID || true
+
+      - name: Extract AI review report
         id: extract
         run: |
           RUN_ID=${{ github.event.workflow_run.id }}
 
-          echo "Looking for report with RUN_ID: $RUN_ID"
+          echo "Looking for AI report with RUN_ID: $RUN_ID"
 
-          FILE=$(grep -rl "AI CODE REVIEW FINAL REPORT RUN_ID:$RUN_ID" . | head -n 1)
+          FILE=$(grep -rl "AI CODE REVIEW FINAL REPORT RUN_ID:$RUN_ID" artifacts || true)
 
           if [ -z "$FILE" ]; then
-            echo "No matching AI report found."
+            echo "No AI report found."
             exit 1
           fi
 
@@ -66,6 +77,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Posting AI review comment to PR #${{ steps.pr.outputs.pr }}"
+
           echo "## 🤖 AI Code Review Result" > comment.md
           echo "" >> comment.md
           echo '```' >> comment.md
