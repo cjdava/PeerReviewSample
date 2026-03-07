@@ -407,5 +407,3 @@ By combining:
 * GitHub Actions
 * Custom engineering standards
 * AI reasoning
-
-the system crea
