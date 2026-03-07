@@ -117,6 +117,71 @@ Checklist Findings:
 
 ---
 
+## Severity Policy
+
+Each finding must include a severity classification.
+
+Allowed severity levels:
+
+* `LOW`
+* `MEDIUM`
+* `HIGH`
+* `CRITICAL`
+
+The severity level determines whether the overall review should fail.
+
+---
+
+### Failure Conditions
+
+The review must be marked as **FAIL** if **at least one finding has severity `HIGH` or `CRITICAL`.**
+
+| Severity | Effect                |
+| -------- | --------------------- |
+| CRITICAL | Causes review failure |
+| HIGH     | Causes review failure |
+| MEDIUM   | Informational only    |
+| LOW      | Informational only    |
+
+---
+
+### Non-Blocking Findings
+
+Findings with the following severities must **not cause the review to fail**:
+
+* `MEDIUM`
+* `LOW`
+
+These findings should still be listed in the **Checklist Findings** section of the report.
+
+---
+
+### Determining Final Review Status
+
+The agent must determine `AI_CODE_REVIEW_STATUS` using the following rules.
+
+1. If **any `HIGH` or `CRITICAL` severity findings exist**, output:
+
+```
+AI_CODE_REVIEW_STATUS: FAIL
+```
+
+2. If findings exist but they are **only `MEDIUM` or `LOW`**, output:
+
+```
+AI_CODE_REVIEW_STATUS: PASS
+```
+
+3. If **no violations are detected**, output:
+
+```
+AI_CODE_REVIEW_STATUS: PASS
+```
+
+The agent must apply this severity policy consistently when generating the final report.
+
+---
+
 # Output Rules
 
 The agent must:
