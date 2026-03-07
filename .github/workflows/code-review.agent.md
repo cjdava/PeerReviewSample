@@ -11,6 +11,9 @@ on:
 permissions:
   contents: read
 
+allowed-domains:
+  - raw.githubusercontent.com
+
 description: |
   AI agent that performs automated code reviews for .NET repositories.
   The agent validates C# code against the engineering checklist stored
@@ -26,6 +29,62 @@ Review pull requests containing C# code and determine whether the code
 complies with the engineering checklist.
 
 The agent is strictly **read-only** and must never modify the repository.
+
+---
+
+# Execution Context
+
+This agent may run in two environments:
+
+1. **GitHub Workflow Execution**
+2. **Local Developer Execution**
+
+## GitHub Workflow Execution
+
+When executed in GitHub Actions, the following values may be available:
+
+- workflow run ID
+- pull request number
+- repository context
+
+In this case the final report must follow the format:
+
+=== AI CODE REVIEW FINAL REPORT RUN_ID:<workflow-run-id> ===
+
+and include:
+
+PR_NUMBER: <pull-request-number>
+
+---
+
+## Local Developer Execution
+
+When executed locally by developers:
+
+- No workflow run ID exists
+- No pull request number exists
+
+In this scenario:
+
+- Set `RUN_ID` to `LOCAL_RUN`
+- Set `PR_NUMBER` to `LOCAL`
+- The report format must remain the same so that developers see the same structure as CI.
+
+Example local output:
+
+=== AI CODE REVIEW FINAL REPORT RUN_ID:LOCAL_RUN ===
+
+PR_NUMBER: LOCAL
+
+CODE REVIEW SUMMARY
+
+Checklist Findings:
+
+- No violations detected
+
+AI_CODE_REVIEW_STATUS: PASS
+
+=== AI CODE REVIEW END RUN_ID:LOCAL_RUN ===
 
 ---
 
