@@ -11,9 +11,6 @@ on:
 permissions:
   contents: read
 
-allowed-domains:
-  - raw.githubusercontent.com
-
 description: |
   AI agent that performs automated code reviews for .NET repositories.
   The agent validates C# code against the engineering checklist stored
