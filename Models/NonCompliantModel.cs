@@ -2,7 +2,7 @@ namespace PeerReviewSample.Models
 {
     public class NonCompliantModel
     {
-        public List<string> Items; // Not initialized
+        public List<string> Items = new List<string>(); // Initialized
 
         public string Name; // No null check in constructor
 
