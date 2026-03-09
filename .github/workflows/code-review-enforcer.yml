@@ -10,6 +10,7 @@ permissions:
   actions: read
   contents: read
   pull-requests: write
+  checks: write
 
 jobs:
   enforce:
@@ -73,6 +74,47 @@ jobs:
           echo '```' >> comment.md
 
           gh pr comment ${{ steps.pr.outputs.pr }} --body-file comment.md
+
+      - name: Convert findings to annotations
+        run: |
+          echo "[]" > annotations.json
+
+          awk '
+          /Rule:/ {rule=$0}
+          /File:/ {file=$2}
+          /Line:/ {line=$2}
+          /Description:/ {
+            desc=substr($0, index($0,$2))
+            printf("{\"path\":\"%s\",\"start_line\":%s,\"end_line\":%s,\"annotation_level\":\"warning\",\"message\":\"%s - %s\"}\n",file,line,line,rule,desc)
+          }' review.txt | jq -s '.' > annotations.json
+
+          echo "Generated annotations:"
+          cat annotations.json
+
+      - name: Create GitHub Check with annotations
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            const annotations = JSON.parse(fs.readFileSync('annotations.json'));
+
+            const status = annotations.length > 0 ? "failure" : "success";
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: "AI Code Review",
+              head_sha: context.payload.workflow_run.head_sha,
+              status: "completed",
+              conclusion: status,
+              output: {
+                title: "AI Code Review Results",
+                summary: annotations.length + " findings detected",
+                annotations: annotations.slice(0, 50)
+              }
+            });
 
       - name: Fail if AI review failed
         run: |
