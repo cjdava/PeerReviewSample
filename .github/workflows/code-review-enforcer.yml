@@ -91,30 +91,30 @@ jobs:
           echo "Generated annotations:"
           cat annotations.json
 
-      - name: Create GitHub Check with annotations
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
+      # - name: Create GitHub Check with annotations
+      #   uses: actions/github-script@v7
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const fs = require('fs');
 
-            const annotations = JSON.parse(fs.readFileSync('annotations.json'));
+      #       const annotations = JSON.parse(fs.readFileSync('annotations.json'));
 
-            const status = annotations.length > 0 ? "failure" : "success";
+      #       const status = annotations.length > 0 ? "failure" : "success";
 
-            await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: "AI Code Review",
-              head_sha: context.payload.workflow_run.head_sha,
-              status: "completed",
-              conclusion: status,
-              output: {
-                title: "AI Code Review Results",
-                summary: annotations.length + " findings detected",
-                annotations: annotations.slice(0, 50)
-              }
-            });
+      #       await github.rest.checks.create({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         name: "AI Code Review",
+      #         head_sha: context.payload.workflow_run.head_sha,
+      #         status: "completed",
+      #         conclusion: status,
+      #         output: {
+      #           title: "AI Code Review Results",
+      #           summary: annotations.length + " findings detected",
+      #           annotations: annotations.slice(0, 50)
+      #         }
+      #       });
 
       - name: Fail if AI review failed
         run: |
