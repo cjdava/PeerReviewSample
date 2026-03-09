@@ -12,7 +12,7 @@ namespace PeerReviewSample.Controllers.Api
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
-            var rng = new Random();
+            var RND = new Random();
             var summaries = new[] { "Sunny", "Cloudy", "Rainy", "Windy", "Snowy" };
 
             var forecasts = new List<WeatherForecast>();
@@ -21,8 +21,8 @@ namespace PeerReviewSample.Controllers.Api
                 forecasts.Add(new WeatherForecast
                 {
                     Date = DateTime.Now.AddDays(i),
-                    TemperatureC = rng.Next(-10, 35),
-                    Summary = summaries[rng.Next(summaries.Length)]
+                    TemperatureC = RND.Next(-10, 35),
+                    Summary = summaries[RND.Next(summaries.Length)]
                 });
             }
             return forecasts;
