@@ -156,8 +156,13 @@ Checklist Findings:
   Category: <Checklist Section>
   Severity: <LOW | MEDIUM | HIGH | CRITICAL>
   File: <relative file path>
-  Line: <line number>
+  Start Line: <start line number>
+  End Line: <end line number>
   Description: <clear explanation>
+
+  Code Snippet:
+  ```csharp
+  <relevant code excerpt>
 
 AI_CODE_REVIEW_STATUS: PASS | FAIL
 
