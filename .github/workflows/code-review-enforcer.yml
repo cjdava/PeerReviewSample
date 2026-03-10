@@ -73,7 +73,7 @@ jobs:
           # cat review.txt >> comment.md
           # echo '```' >> comment.md
 
-          gh pr comment ${{ steps.pr.outputs.pr }} --body-file comment.md
+          gh pr comment ${{ steps.pr.outputs.pr }} --body-file review.txt
 
       # - name: Convert findings to annotations
       #   run: |
