@@ -12,9 +12,9 @@ namespace PeerReviewSample.Controllers.Api
     {
         private readonly WeatherService _weatherService;
 
-        public WeatherController()
+        public WeatherController(WeatherService weatherService)
         {
-            _weatherService = new WeatherService();
+            _weatherService = weatherService;
         }
 
         [HttpGet]

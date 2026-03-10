@@ -8,12 +8,16 @@ namespace PeerReviewSample.Models
 
         public NonCompliantModel(string name)
         {
-            Name = name; // No validation for null or empty
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentException("Name must not be null or empty.", nameof(name));
+            Name = name;
         }
 
         public void AddItem(string item)
         {
-            Items.Add(item); // Possible NullReferenceException
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+            Items.Add(item);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace PeerReviewSample.Application
 	{
 		public IEnumerable<WeatherForecast> GetForecasts()
 		{
-			var RND = new Random();
+			var rnd = new Random();
 			var summaries = new[] { "Sunny", "Cloudy", "Rainy", "Windy", "Snowy" };
 
 			var forecasts = new List<WeatherForecast>();
@@ -17,8 +17,8 @@ namespace PeerReviewSample.Application
 				forecasts.Add(new WeatherForecast
 				{
 					Date = DateTime.Now.AddDays(i),
-					TemperatureC = RND.Next(-10, 35),
-					Summary = summaries[RND.Next(summaries.Length)]
+					TemperatureC = rnd.Next(-10, 35),
+					Summary = summaries[rnd.Next(summaries.Length)]
 				});
 			}
 			return forecasts;
