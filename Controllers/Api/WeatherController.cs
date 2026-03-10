@@ -10,11 +10,11 @@ namespace PeerReviewSample.Controllers.Api
     [Route("api/[controller]")]
     public class WeatherController : ControllerBase
     {
-        private readonly WeatherService _weatherService;
+        private readonly IWeatherService _weatherService;
 
-        public WeatherController(WeatherService weatherService)
+        public WeatherController(IWeatherService weatherService)
         {
-            _weatherService = weatherService;
+            _weatherService = weatherService ?? throw new ArgumentNullException(nameof(weatherService));
         }
 
         [HttpGet]

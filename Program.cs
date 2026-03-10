@@ -2,7 +2,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<PeerReviewSample.Application.WeatherService>();
+builder.Services.AddScoped<PeerReviewSample.Application.IWeatherService, PeerReviewSample.Application.WeatherService>();
 
 var app = builder.Build();
 

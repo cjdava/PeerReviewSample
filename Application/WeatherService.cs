@@ -4,7 +4,7 @@ using PeerReviewSample.Models;
 
 namespace PeerReviewSample.Application
 {
-	public class WeatherService
+	public class WeatherService : IWeatherService
 	{
 		public IEnumerable<WeatherForecast> GetForecasts()
 		{
