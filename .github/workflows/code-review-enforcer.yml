@@ -56,6 +56,15 @@ jobs:
           echo "Extracted report:"
           cat review.txt
 
+      - name: Determine review result
+        id: result
+        run: |
+          if grep -q "AI_CODE_REVIEW_STATUS: FAIL" review.txt; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+
       - name: Get PR number
         id: pr
         run: |
@@ -67,60 +76,34 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # echo "## 🤖 AI Code Review Result" > comment.md
-          # echo "" >> comment.md
-          # echo '```' >> comment.md
-          # cat review.txt >> comment.md
-          # echo '```' >> comment.md
-
           gh pr comment ${{ steps.pr.outputs.pr }} --body-file review.txt
 
-      # - name: Convert findings to annotations
-      #   run: |
-      #     echo "[]" > annotations.json
+      - name: Publish AI Code Review Status Check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
 
-      #     awk '
-      #     /Rule:/ {rule=$0}
-      #     /File:/ {file=$2}
-      #     /Line:/ {line=$2}
-      #     /Description:/ {
-      #       desc=substr($0, index($0,$2))
-      #       printf("{\"path\":\"%s\",\"start_line\":%s,\"end_line\":%s,\"annotation_level\":\"warning\",\"message\":\"%s - %s\"}\n",file,line,line,rule,desc)
-      #     }' review.txt | jq -s '.' > annotations.json
+            const report = fs.readFileSync('review.txt','utf8');
 
-      #     echo "Generated annotations:"
-      #     cat annotations.json
+            const conclusion = "${{ steps.result.outputs.status }}";
 
-      # - name: Create GitHub Check with annotations
-      #   uses: actions/github-script@v7
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const fs = require('fs');
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: "AI Code Review",
+              head_sha: context.payload.workflow_run.head_sha,
+              status: "completed",
+              conclusion: conclusion,
+              output: {
+                title: "AI Code Review Result",
+                summary: report.substring(0, 65000)
+              }
+            });
 
-      #       const annotations = JSON.parse(fs.readFileSync('annotations.json'));
-
-      #       const status = annotations.length > 0 ? "failure" : "success";
-
-      #       await github.rest.checks.create({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         name: "AI Code Review",
-      #         head_sha: context.payload.workflow_run.head_sha,
-      #         status: "completed",
-      #         conclusion: status,
-      #         output: {
-      #           title: "AI Code Review Results",
-      #           summary: annotations.length + " findings detected",
-      #           annotations: annotations.slice(0, 50)
-      #         }
-      #       });
-
-      - name: Fail if AI review failed
+      - name: Fail workflow if review failed
+        if: steps.result.outputs.status == 'failure'
         run: |
-          if grep -q "AI_CODE_REVIEW_STATUS: FAIL" review.txt; then
-            echo "❌ AI code review failed"
-            exit 1
-          else
-            echo "✅ AI code review passed"
-          fi
+          echo "❌ AI code review failed"
+          exit 1
