@@ -11,7 +11,6 @@ permissions:
   contents: read
   pull-requests: write
   checks: write
-  statuses: writes
 
 jobs:
   enforce:
@@ -79,7 +78,7 @@ jobs:
         run: |
           gh pr comment ${{ steps.pr.outputs.pr }} --body-file review.txt
 
-      # - name: Publish AI Code Review Status
+      # - name: Publish AI Code Review Status Check
       #   uses: actions/github-script@v7
       #   with:
       #     github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -87,20 +86,20 @@ jobs:
       #       const fs = require('fs');
 
       #       const report = fs.readFileSync('review.txt','utf8');
-      #       const failed = report.includes("AI_CODE_REVIEW_STATUS: FAIL");
 
-      #       const state = failed ? "failure" : "success";
+      #       const conclusion = "${{ steps.result.outputs.status }}";
 
-      #       await github.rest.repos.createCommitStatus({
+      #       await github.rest.checks.create({
       #         owner: context.repo.owner,
       #         repo: context.repo.repo,
-      #         sha: context.payload.workflow_run.head_sha,
-      #         state: state,
-      #         context: "AI Code Review",
-      #         description: failed
-      #           ? "AI review detected blocking issues"
-      #           : "AI review passed",
-      #         target_url: context.payload.workflow_run.html_url
+      #         name: "AI Code Review",
+      #         head_sha: context.payload.workflow_run.head_sha,
+      #         status: "completed",
+      #         conclusion: conclusion,
+      #         output: {
+      #           title: "AI Code Review Result",
+      #           summary: report.substring(0, 65000)
+      #         }
       #       });
 
       - name: Fail workflow if review failed
